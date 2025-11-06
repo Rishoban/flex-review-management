@@ -1,0 +1,103 @@
+<div class="login-container">
+  <div class="login-card">
+    <!-- Logo Section -->
+    <div class="logo-section">
+      <div class="logo">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2L2 7V10C2 16 6 20.5 12 22C18 20.5 22 16 22 10V7L12 2Z" 
+                fill="var(--theme-primary)" stroke="var(--theme-primary)" stroke-width="2" 
+                stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M9 12L11 14L15 10" stroke="var(--theme-on-primary)" stroke-width="2" 
+                stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <h1 class="app-title">Flex Review Management</h1>
+      <p class="app-subtitle">Sign in to your account</p>
+    </div>
+
+    <!-- Login Form -->
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form" novalidate>
+      <!-- Email Field -->
+      <div class="form-field">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Email Address</mat-label>
+          <input matInput 
+                 type="email" 
+                 formControlName="email"
+                 autocomplete="email"
+                 placeholder="Enter your email">
+          <mat-icon matSuffix>email</mat-icon>
+          @if (emailError) {
+            <mat-error>{{ emailError }}</mat-error>
+          }
+        </mat-form-field>
+      </div>
+
+      <!-- Password Field -->
+      <div class="form-field">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Password</mat-label>
+          <input matInput 
+                 [type]="showPassword ? 'text' : 'password'"
+                 formControlName="password"
+                 autocomplete="current-password"
+                 placeholder="Enter your password">
+          <button mat-icon-button 
+                  matSuffix 
+                  type="button"
+                  (click)="togglePasswordVisibility()">
+            <mat-icon>{{ showPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+          </button>
+          @if (passwordError) {
+            <mat-error>{{ passwordError }}</mat-error>
+          }
+        </mat-form-field>
+      </div>
+
+      <!-- Remember Me & Forgot Password -->
+      <div class="form-options">
+        <mat-checkbox formControlName="rememberMe" class="remember-me">
+          Remember me
+        </mat-checkbox>
+        <button type="button" class="forgot-password-link">
+          Forgot password?
+        </button>
+      </div>
+
+      <!-- Submit Button -->
+      <div class="form-actions">
+        <button mat-raised-button 
+                type="submit"
+                class="login-button"
+                color="primary"
+                [disabled]="!loginForm.valid || isLoading">
+          @if (isLoading) {
+            <ng-container>
+              <mat-icon>hourglass_empty</mat-icon>
+              Signing in...
+            </ng-container>
+          } @else {
+            Sign In
+          }
+        </button>
+      </div>
+    </form>
+
+    <!-- Demo Info -->
+    <div class="demo-info">
+      <mat-icon>info</mat-icon>
+      <div class="demo-text">
+        <strong>Demo Credentials:</strong><br>
+        Email: admin@example.com<br>
+        Password: password
+      </div>
+    </div>
+  </div>
+
+  <!-- Background Decoration -->
+  <div class="background-decoration">
+    <div class="circle circle-1"></div>
+    <div class="circle circle-2"></div>
+    <div class="circle circle-3"></div>
+  </div>
+</div>

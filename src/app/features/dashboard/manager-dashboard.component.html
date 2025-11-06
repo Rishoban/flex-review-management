@@ -1,0 +1,407 @@
+<!-- Header Toolbar -->
+<mat-toolbar class="dashboard-toolbar">
+  <span class="app-title">
+    <mat-icon>dashboard</mat-icon>
+    Review Management Dashboard
+  </span>
+  <span class="spacer"></span>
+  <span class="user-info">Manager Portal</span>
+  <button mat-icon-button [matMenuTriggerFor]="userMenu" matTooltip="Account Menu">
+    <mat-icon>account_circle</mat-icon>
+  </button>
+</mat-toolbar>
+
+<!-- User Menu -->
+<mat-menu #userMenu="matMenu">
+  <button mat-menu-item>
+    <mat-icon>settings</mat-icon>
+    Settings
+  </button>
+  <button mat-menu-item (click)="logout()">
+    <mat-icon>logout</mat-icon>
+    Logout
+  </button>
+</mat-menu>
+
+<div class="dashboard-container">
+  <!-- Loading Spinner -->
+  @if (isLoading()) {
+    <div class="loading-container">
+      <mat-spinner diameter="50"></mat-spinner>
+      <p>Loading dashboard data...</p>
+    </div>
+  } @else {
+    <!-- Dashboard Content -->
+    <div class="dashboard-content">
+      
+      <!-- Stats Cards -->
+      <div class="stats-grid">
+        <mat-card class="stat-card">
+          <mat-card-content>
+            <div class="stat-header">
+              <mat-icon class="stat-icon">reviews</mat-icon>
+              <span class="stat-label">Total Reviews</span>
+            </div>
+            <div class="stat-value">{{ dashboardStats().totalReviews }}</div>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card class="stat-card">
+          <mat-card-content>
+            <div class="stat-header">
+              <mat-icon class="stat-icon">star</mat-icon>
+              <span class="stat-label">Average Rating</span>
+            </div>
+            <div class="stat-value">{{ dashboardStats().averageRating | number:'1.1-1' }}</div>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card class="stat-card">
+          <mat-card-content>
+            <div class="stat-header">
+              <mat-icon class="stat-icon" [matBadge]="dashboardStats().pendingReviews" 
+                        matBadgeColor="warn">pending</mat-icon>
+              <span class="stat-label">Pending Reviews</span>
+            </div>
+            <div class="stat-value">{{ dashboardStats().pendingReviews }}</div>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card class="stat-card">
+          <mat-card-content>
+            <div class="stat-header">
+              <mat-icon class="stat-icon" [matBadge]="dashboardStats().flaggedIssues" 
+                        matBadgeColor="accent">flag</mat-icon>
+              <span class="stat-label">Flagged Issues</span>
+            </div>
+            <div class="stat-value">{{ dashboardStats().flaggedIssues }}</div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+
+      <!-- Tabs for Different Views -->
+      <mat-tab-group class="dashboard-tabs" (selectedTabChange)="onTabChange($event.index)">
+        
+        <!-- Reviews Tab -->
+        <mat-tab label="Reviews Management">
+          <div class="tab-content">
+            
+            <!-- Filters Section -->
+            <mat-card class="filters-card">
+              <mat-card-header>
+                <mat-card-title>
+                  <mat-icon>filter_list</mat-icon>
+                  Filters & Search
+                </mat-card-title>
+              </mat-card-header>
+              <mat-card-content>
+                <div class="filters-row">
+                  <!-- Search -->
+                  <mat-form-field appearance="outline">
+                    <mat-label>Search reviews...</mat-label>
+                    <input matInput 
+                           [value]="searchTerm()"
+                           (input)="onSearchChange($event)"
+                           placeholder="Guest name, property, or review content">
+                    <mat-icon matSuffix>search</mat-icon>
+                  </mat-form-field>
+
+                  <!-- Status Filter -->
+                  <mat-form-field appearance="outline">
+                    <mat-label>Status</mat-label>
+                    <mat-select>
+                      <mat-option value="">All Statuses</mat-option>
+                      <mat-option value="pending">Pending</mat-option>
+                      <mat-option value="approved">Approved</mat-option>
+                      <mat-option value="published">Published</mat-option>
+                      <mat-option value="rejected">Rejected</mat-option>
+                    </mat-select>
+                  </mat-form-field>
+
+                  <!-- Channel Filter -->
+                  <mat-form-field appearance="outline">
+                    <mat-label>Channel</mat-label>
+                    <mat-select>
+                      <mat-option value="">All Channels</mat-option>
+                      <mat-option value="airbnb">Airbnb</mat-option>
+                      <mat-option value="booking">Booking.com</mat-option>
+                      <mat-option value="direct">Direct</mat-option>
+                      <mat-option value="google">Google</mat-option>
+                    </mat-select>
+                  </mat-form-field>
+
+                  <!-- Property Filter -->
+                  <mat-form-field appearance="outline">
+                    <mat-label>Property</mat-label>
+                    <mat-select>
+                      <mat-option value="">All Properties</mat-option>
+                      @for (property of propertyPerformance(); track property.propertyId) {
+                        <mat-option [value]="property.propertyId">
+                          {{ property.propertyName }}
+                        </mat-option>
+                      }
+                    </mat-select>
+                  </mat-form-field>
+                </div>
+
+                <!-- Quick Filters -->
+                <div class="quick-filters">
+                  <mat-chip-listbox>
+                    <mat-chip-option>Show Flagged ({{ flaggedReviews().length }})</mat-chip-option>
+                    <mat-chip-option>Pending Approval ({{ reviewsByStatus().pending }})</mat-chip-option>
+                    <mat-chip-option>High Rating (4.5+)</mat-chip-option>
+                    <mat-chip-option>Low Rating (<3)</mat-chip-option>
+                    <mat-chip-option>Recent (Last 7 days)</mat-chip-option>
+                  </mat-chip-listbox>
+                </div>
+              </mat-card-content>
+            </mat-card>
+
+            <!-- Reviews Table -->
+            <mat-card class="reviews-table-card">
+              <mat-card-header>
+                <mat-card-title>
+                  Reviews ({{ filteredReviews().length }})
+                </mat-card-title>
+                <div class="table-actions">
+                  <button mat-button (click)="exportReviews()">
+                    <mat-icon>download</mat-icon>
+                    Export
+                  </button>
+                </div>
+              </mat-card-header>
+              <mat-card-content>
+                <table mat-table [dataSource]="filteredReviews()" class="reviews-table" matSort>
+                  
+                  <!-- Guest Name Column -->
+                  <ng-container matColumnDef="guestName">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header>Guest</th>
+                    <td mat-cell *matCellDef="let review">
+                      <div class="guest-info">
+                        <span class="guest-name">{{ review.guestName }}</span>
+                      </div>
+                    </td>
+                  </ng-container>
+
+                  <!-- Property Column -->
+                  <ng-container matColumnDef="listingName">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header>Property</th>
+                    <td mat-cell *matCellDef="let review">
+                      <div class="property-info">
+                        <span class="property-name">{{ review.listingName }}</span>
+                        <mat-icon class="channel-icon" [matTooltip]="review.channel">
+                          {{ getChannelIcon(review.channel || '') }}
+                        </mat-icon>
+                      </div>
+                    </td>
+                  </ng-container>
+
+                  <!-- Rating Column -->
+                  <ng-container matColumnDef="rating">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header>Rating</th>
+                    <td mat-cell *matCellDef="let review">
+                      @if (review.rating) {
+                        <div class="rating-display" [style.color]="getRatingColor(review.rating)">
+                          <mat-icon>star</mat-icon>
+                          {{ review.rating }}
+                        </div>
+                      } @else {
+                        <div class="rating-display">
+                          <mat-icon>star</mat-icon>
+                          {{ calculateAverageRating(review.reviewCategory) }}
+                        </div>
+                      }
+                    </td>
+                  </ng-container>
+
+                  <!-- Status Column -->
+                  <ng-container matColumnDef="status">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header>Status</th>
+                    <td mat-cell *matCellDef="let review">
+                      <mat-chip [style.background-color]="getStatusColor(review.status)"
+                               [style.color]="'white'">
+                        {{ review.status | titlecase }}
+                      </mat-chip>
+                    </td>
+                  </ng-container>
+
+                  <!-- Channel Column -->
+                  <ng-container matColumnDef="channel">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header>Channel</th>
+                    <td mat-cell *matCellDef="let review">
+                      <div class="channel-info">
+                        <mat-icon>{{ getChannelIcon(review.channel || '') }}</mat-icon>
+                        {{ review.channel | titlecase }}
+                      </div>
+                    </td>
+                  </ng-container>
+
+                  <!-- Date Column -->
+                  <ng-container matColumnDef="submittedAt">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header>Date</th>
+                    <td mat-cell *matCellDef="let review">
+                      {{ formatDate(review.submittedAt) }}
+                    </td>
+                  </ng-container>
+
+                  <!-- Flagged Issues Column -->
+                  <ng-container matColumnDef="flaggedIssues">
+                    <th mat-header-cell *matHeaderCellDef>Issues</th>
+                    <td mat-cell *matCellDef="let review">
+                      @if (review.flaggedIssues && review.flaggedIssues.length > 0) {
+                        <mat-chip-listbox>
+                          @for (issue of review.flaggedIssues; track issue) {
+                            <mat-chip class="issue-chip">{{ issue }}</mat-chip>
+                          }
+                        </mat-chip-listbox>
+                      } @else {
+                        <span class="no-issues">No issues</span>
+                      }
+                    </td>
+                  </ng-container>
+
+                  <!-- Website Selection Column -->
+                  <ng-container matColumnDef="websiteSelection">
+                    <th mat-header-cell *matHeaderCellDef>Website</th>
+                    <td mat-cell *matCellDef="let review">
+                      <mat-slide-toggle 
+                        [checked]="review.isSelectedForWebsite"
+                        (change)="toggleWebsiteSelection(review.id)"
+                        matTooltip="Display on public website">
+                      </mat-slide-toggle>
+                    </td>
+                  </ng-container>
+
+                  <!-- Actions Column -->
+                  <ng-container matColumnDef="actions">
+                    <th mat-header-cell *matHeaderCellDef>Actions</th>
+                    <td mat-cell *matCellDef="let review">
+                      <button mat-icon-button [matMenuTriggerFor]="actionMenu">
+                        <mat-icon>more_vert</mat-icon>
+                      </button>
+                      <mat-menu #actionMenu="matMenu">
+                        <button mat-menu-item (click)="updateReviewStatus(review.id, 'approved')">
+                          <mat-icon>check</mat-icon>Approve
+                        </button>
+                        <button mat-menu-item (click)="updateReviewStatus(review.id, 'rejected')">
+                          <mat-icon>close</mat-icon>Reject
+                        </button>
+                        <button mat-menu-item (click)="updateReviewStatus(review.id, 'published')">
+                          <mat-icon>publish</mat-icon>Publish
+                        </button>
+                        <button mat-menu-item (click)="navigateToReview(review.id)">
+                          <mat-icon>visibility</mat-icon>View Details
+                        </button>
+                      </mat-menu>
+                    </td>
+                  </ng-container>
+
+                  <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                  <tr mat-row *matRowDef="let row; columns: displayedColumns;" 
+                      class="review-row"
+                      [class.flagged-row]="row.flaggedIssues && row.flaggedIssues.length > 0"></tr>
+                </table>
+
+                <!-- No Results -->
+                @if (filteredReviews().length === 0) {
+                  <div class="no-results">
+                    <mat-icon>search_off</mat-icon>
+                    <p>No reviews found matching your criteria</p>
+                  </div>
+                }
+              </mat-card-content>
+            </mat-card>
+          </div>
+        </mat-tab>
+
+        <!-- Analytics Tab -->
+        <mat-tab label="Analytics & Performance">
+          <div class="tab-content">
+            
+            <!-- Property Performance Cards -->
+            <div class="performance-grid">
+              @for (property of propertyPerformance(); track property.propertyId) {
+                <mat-card class="property-card" (click)="navigateToProperty(property.propertyId)">
+                  <mat-card-header>
+                    <mat-card-title>{{ property.propertyName }}</mat-card-title>
+                    <mat-card-subtitle>
+                      <mat-icon [style.color]="getTrendColor(property.recentTrend)">
+                        {{ getTrendIcon(property.recentTrend) }}
+                      </mat-icon>
+                      {{ property.recentTrend | titlecase }} Trend
+                    </mat-card-subtitle>
+                  </mat-card-header>
+                  <mat-card-content>
+                    <div class="property-stats">
+                      <div class="stat-item">
+                        <span class="stat-label">Average Rating</span>
+                        <span class="stat-value" [style.color]="getRatingColor(property.averageRating)">
+                          {{ property.averageRating }}
+                        </span>
+                      </div>
+                      <div class="stat-item">
+                        <span class="stat-label">Total Reviews</span>
+                        <span class="stat-value">{{ property.totalReviews }}</span>
+                      </div>
+                      <div class="stat-item">
+                        <span class="stat-label">Flagged Issues</span>
+                        <span class="stat-value" [class.warning]="property.flaggedIssuesCount > 0">
+                          {{ property.flaggedIssuesCount }}
+                        </span>
+                      </div>
+                    </div>
+
+                    <!-- Category Averages -->
+                    <div class="category-averages">
+                      <h4>Category Performance</h4>
+                      @for (category of property.categoryAverages | keyvalue; track category.key) {
+                        <div class="category-item">
+                          <span class="category-name">{{ category.key | titlecase }}</span>
+                          <span class="category-rating" [style.color]="getRatingColor(category.value)">
+                            {{ category.value }}
+                          </span>
+                        </div>
+                      }
+                    </div>
+
+                    <!-- Channel Distribution -->
+                    <div class="channel-distribution">
+                      <h4>Channel Distribution</h4>
+                      @for (channel of property.reviewsByChannel | keyvalue; track channel.key) {
+                        <div class="channel-item">
+                          <mat-icon>{{ getChannelIcon(channel.key) }}</mat-icon>
+                          <span>{{ channel.key | titlecase }}: {{ channel.value }}</span>
+                        </div>
+                      }
+                    </div>
+                  </mat-card-content>
+                </mat-card>
+              }
+            </div>
+          </div>
+        </mat-tab>
+
+        <!-- Google Reviews Tab -->
+        <mat-tab label="Google Reviews">
+          <div class="tab-content">
+            <mat-card class="google-reviews-card">
+              <mat-card-header>
+                <mat-card-title>
+                  <mat-icon>place</mat-icon>
+                  Google Reviews Integration
+                </mat-card-title>
+              </mat-card-header>
+              <mat-card-content>
+                <p>Connect with Google Places API to fetch and manage Google Reviews.</p>
+                <button mat-raised-button color="primary">
+                  <mat-icon>link</mat-icon>
+                  Connect Google Reviews
+                </button>
+              </mat-card-content>
+            </mat-card>
+          </div>
+        </mat-tab>
+      </mat-tab-group>
+    </div>
+  }
+</div>
