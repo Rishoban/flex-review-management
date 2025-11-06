@@ -23,6 +23,10 @@ export const routes: Routes = [
     loadComponent: () => import('./features/reviews/review-detail.component').then(m => m.ReviewDetailComponent)
   },
   {
+    path: 'reviews',
+    loadComponent: () => import('./features/public/reviews-display.component').then(m => m.ReviewsDisplayComponent)
+  },
+  {
     path: '**',
     redirectTo: '/login'
   }

@@ -17,9 +17,10 @@ import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatSortModule } from '@angular/material/sort';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatDividerModule } from '@angular/material/divider';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 
@@ -53,8 +54,10 @@ import {
     MatSortModule,
     MatSlideToggleModule,
     MatProgressSpinnerModule,
+    MatSnackBarModule,
     MatMenuModule,
     MatTooltipModule,
+    MatDividerModule,
     MatDatepickerModule,
     MatNativeDateModule
   ],
@@ -330,6 +333,11 @@ export class ManagerDashboardComponent implements OnInit {
   protected exportReviews(): void {
     // Implementation for exporting reviews to CSV/Excel
     this.showSuccessMessage('Reviews exported successfully');
+  }
+
+  protected viewPublicReviews(): void {
+    // Open public reviews page in new tab to simulate how customers would see it
+    window.open('/reviews', '_blank');
   }
 
   protected logout(): void {

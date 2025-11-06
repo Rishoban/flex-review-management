@@ -119,25 +119,13 @@ import { Review } from '../../shared/models/review.models';
             <mat-card-title>Quick Actions</mat-card-title>
           </mat-card-header>
           <mat-card-content>
-            <div class="action-buttons">
-              <button mat-raised-button color="primary" 
-                      (click)="toggleStatus('published')"
-                      [disabled]="review()?.status === 'published'">
-                <mat-icon>visibility</mat-icon>
-                Publish Review
-              </button>
-              <button mat-raised-button color="accent"
-                      (click)="toggleStatus('approved')"
-                      [disabled]="review()?.status === 'approved'">
-                <mat-icon>check</mat-icon>
-                Approve Review
-              </button>
-              <button mat-raised-button color="warn"
-                      (click)="toggleStatus('rejected')"
-                      [disabled]="review()?.status === 'rejected'">
-                <mat-icon>close</mat-icon>
-                Reject Review
-              </button>
+            <!-- Current Status Display -->
+            <div class="current-status">
+              <h4>Current Status</h4>
+              <div class="status-chip" [ngClass]="'status-' + review()?.status">
+                <mat-icon>{{ getStatusIcon(review()?.status) }}</mat-icon>
+                <span>{{ getStatusDisplay(review()?.status) }}</span>
+              </div>
             </div>
           </mat-card-content>
         </mat-card>
@@ -297,5 +285,31 @@ export class ReviewDetailComponent implements OnInit {
 
   getPreview(text: string): string {
     return text.length > 100 ? text.substring(0, 97) + '...' : text;
+  }
+
+  getStatusIcon(status?: string): string {
+    const icons: { [key: string]: string } = {
+      'pending': 'schedule',
+      'approved': 'check_circle',
+      'published': 'visibility',
+      'rejected': 'cancel',
+      'displayed': 'visibility',
+      'hidden': 'visibility_off',
+      'flagged': 'flag'
+    };
+    return icons[status || 'pending'] || 'help';
+  }
+
+  getStatusDisplay(status?: string): string {
+    const displays: { [key: string]: string } = {
+      'pending': 'Pending Review',
+      'approved': 'Approved',
+      'published': 'Published',
+      'rejected': 'Rejected',
+      'displayed': 'Displayed',
+      'hidden': 'Hidden',
+      'flagged': 'Flagged'
+    };
+    return displays[status || 'pending'] || 'Unknown Status';
   }
 }

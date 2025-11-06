@@ -13,6 +13,11 @@
 
 <!-- User Menu -->
 <mat-menu #userMenu="matMenu">
+  <button mat-menu-item (click)="viewPublicReviews()">
+    <mat-icon>visibility</mat-icon>
+    View Public Reviews Page
+  </button>
+  <mat-divider></mat-divider>
   <button mat-menu-item>
     <mat-icon>settings</mat-icon>
     Settings
