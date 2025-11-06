@@ -2,6 +2,7 @@ import { Component, OnInit, signal, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
+import { Observable } from 'rxjs';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule } from '@angular/material/chips';
@@ -92,15 +93,38 @@ import { Review } from '../../shared/models/review.models';
               <p>{{review()!.publicReview}}</p>
             </div>
 
+            <!-- Review Categories -->
+            <div class="categories-section" *ngIf="review()!.reviewCategory && review()!.reviewCategory.length > 0">
+              <h4>Category Ratings</h4>
+              <div class="category-grid">
+                <div class="category-item" *ngFor="let cat of review()!.reviewCategory">
+                  <span class="category-name">{{formatCategoryName(cat.category)}}</span>
+                  <div class="category-rating">
+                    <div class="rating-bar">
+                      <div class="rating-fill" [style.width.%]="(cat.rating / 10) * 100"></div>
+                    </div>
+                    <span class="rating-value">{{cat.rating}}/10</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Flagged Issues -->
+            <div class="flagged-section" *ngIf="hasFlaggedIssues()">
+              <h4>Flagged Issues</h4>
+              <div class="flagged-issues">
+                <mat-chip class="issue-chip" *ngFor="let issue of getFlaggedIssues()">
+                  <mat-icon>warning</mat-icon>
+                  {{formatCategoryName(issue)}}
+                </mat-chip>
+              </div>
+            </div>
+
             <!-- Review Metadata -->
             <div class="metadata">
               <div class="metadata-row">
-                <label>Category:</label>
-                <mat-chip *ngFor="let cat of review()!.reviewCategory">{{cat.category}}</mat-chip>
-              </div>
-              <div class="metadata-row">
                 <label>Source:</label>
-                <mat-chip>{{review()!.channel}}</mat-chip>
+                <mat-chip>{{getChannelName(review()?.channel || 'direct')}}</mat-chip>
               </div>
               <div class="metadata-row">
                 <label>Status:</label>
@@ -108,7 +132,12 @@ import { Review } from '../../shared/models/review.models';
                   {{getStatusLabel(review()!.status)}}
                 </mat-chip>
               </div>
-
+              <div class="metadata-row">
+                <label>Website Display:</label>
+                <mat-chip [class]="review()!.isSelectedForWebsite ? 'status-published' : 'status-hidden'">
+                  {{review()!.isSelectedForWebsite ? 'Selected' : 'Not Selected'}}
+                </mat-chip>
+              </div>
             </div>
           </mat-card-content>
         </mat-card>
@@ -167,15 +196,22 @@ export class ReviewDetailComponent implements OnInit {
   similarReviews = signal<Review[]>([]);
 
   ngOnInit() {
+    console.log('ReviewDetailComponent loaded successfully');
     const reviewId = this.route.snapshot.params['id'];
     this.loadReview(reviewId);
-    this.loadSimilarReviews(reviewId);
   }
 
   loadReview(id: string) {
-    this.reviewService.getReviews().subscribe(reviews => {
-      const review = reviews.find(r => r.id.toString() === id);
-      this.review.set(review || null);
+    const reviewId = parseInt(id);
+    this.reviewService.getReviewById(reviewId).subscribe({
+      next: (review) => {
+        this.review.set(review);
+        this.loadSimilarReviews(id);
+      },
+      error: (error) => {
+        console.error('Failed to load review:', error);
+        this.review.set(null);
+      }
     });
   }
 
@@ -200,16 +236,37 @@ export class ReviewDetailComponent implements OnInit {
     const reviewId = this.review()?.id;
     if (!reviewId) return;
 
-    this.reviewService.updateReviewStatus(reviewId, status).subscribe({
-      next: () => {
+    let apiCall: Observable<any>;
+    
+    // Use the appropriate API endpoint based on status
+    switch (status) {
+      case 'approved':
+        apiCall = this.reviewService.approveReview(reviewId);
+        break;
+      case 'published':
+        apiCall = this.reviewService.publishReview(reviewId);
+        break;
+      case 'rejected':
+        apiCall = this.reviewService.rejectReview(reviewId);
+        break;
+      default:
+        // Fallback to old method for other statuses like 'pending'
+        apiCall = this.reviewService.updateReviewStatus(reviewId, status);
+        break;
+    }
+
+    apiCall.subscribe({
+      next: (response: any) => {
         this.review.update(current => 
           current ? { ...current, status } : current
         );
-        this.snackBar.open(`Review ${status} successfully`, 'Close', {
+        const message = response.message || `Review ${status} successfully`;
+        this.snackBar.open(message, 'Close', {
           duration: 3000
         });
       },
-      error: () => {
+      error: (error: any) => {
+        console.error('Failed to update review status:', error);
         this.snackBar.open('Failed to update review status', 'Close', {
           duration: 3000
         });
@@ -275,12 +332,11 @@ export class ReviewDetailComponent implements OnInit {
   }
 
   getPropertyName(propertyId?: string): string {
-    if (!propertyId) return 'Unknown Property';
-    const properties: { [key: string]: string } = {
-      'prop1': 'Flex Living Downtown',
-      'prop2': 'Flex Living Midtown'
-    };
-    return properties[propertyId] || 'Unknown Property';
+    const currentReview = this.review();
+    if (currentReview && currentReview.listingName) {
+      return currentReview.listingName;
+    }
+    return 'Unknown Property';
   }
 
   getPreview(text: string): string {
@@ -311,5 +367,32 @@ export class ReviewDetailComponent implements OnInit {
       'flagged': 'Flagged'
     };
     return displays[status || 'pending'] || 'Unknown Status';
+  }
+
+  formatCategoryName(category: string): string {
+    return category
+      .split('_')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  }
+
+  getChannelName(channel?: string): string {
+    const channelNames: { [key: string]: string } = {
+      'airbnb': 'Airbnb',
+      'booking': 'Booking.com',
+      'direct': 'Direct Booking',
+      'google': 'Google Reviews'
+    };
+    return channelNames[channel || 'direct'] || (channel ? channel.charAt(0).toUpperCase() + channel.slice(1) : 'Direct Booking');
+  }
+
+  hasFlaggedIssues(): boolean {
+    const review = this.review();
+    return !!(review?.flaggedIssues && review.flaggedIssues.length > 0);
+  }
+
+  getFlaggedIssues(): string[] {
+    const review = this.review();
+    return review?.flaggedIssues || [];
   }
 }

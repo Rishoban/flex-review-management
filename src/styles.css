@@ -19,6 +19,21 @@ html, body {
 /* Theme CSS Variables */
 :root {
   --theme-primary: #485e54;
+  --theme-primary-rgb: 72, 94, 84;
+  --theme-accent: #8bc34a;
+  --theme-warn: #f44336;
+  --theme-error: #f44336;
+  --success-color: #4caf50;
+  --warning-color: #ff9800;
+  --info-color: #2196f3;
+  --text-primary: #212121;
+  --text-secondary: #757575;
+  --background-primary: #fafafa;
+  --background-secondary: #ffffff;
+  --border-color: #e0e0e0;
+  --shadow-light: 0 2px 4px rgba(0,0,0,0.1);
+  --shadow-medium: 0 4px 8px rgba(0,0,0,0.15);
+  --shadow-heavy: 0 8px 16px rgba(0,0,0,0.2);
   --theme-background: #fffbee;
   --theme-surface: #fffdf6;
   --theme-on-primary: #ffffff;
@@ -32,6 +47,8 @@ html, body {
   --theme-shadow-medium: rgba(72, 94, 84, 0.2);
   --theme-shadow-dark: rgba(72, 94, 84, 0.3);
 }
+
+/* Custom theme styles and global layout */
 
 body {
   background: var(--theme-background);

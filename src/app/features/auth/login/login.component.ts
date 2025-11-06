@@ -11,7 +11,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { AuthService } from '../../../shared/services/auth.service';
-import { LoginForm, ApiError } from '../../../shared/models/auth.models';
+import { LoginRequest } from '../../../shared/models/auth.models';
 
 @Component({
   selector: 'app-login',
@@ -48,11 +48,11 @@ export class LoginComponent {
 
   private createForm(): FormGroup {
     return this.formBuilder.group({
-      email: ['admin@example.com', [
+      email: ['admin@gmail.com', [
         Validators.required,
         Validators.email
       ]],
-      password: ['password', [
+      password: ['123456', [
         Validators.required,
         Validators.minLength(6)
       ]],
@@ -107,13 +107,13 @@ export class LoginComponent {
 
   protected onSubmit(): void {
     if (this.loginForm.valid && !this.isLoading()) {
-      const formValue = this.loginForm.value as LoginForm;
+      const formValue = this.loginForm.value as LoginRequest;
       
       this.authService.login(formValue).subscribe({
         next: (response: any) => {
           this.showSuccessMessage('Login successful!');
         },
-        error: (error: ApiError) => {
+        error: (error: Error) => {
           this.showErrorMessage(error.message);
         }
       });

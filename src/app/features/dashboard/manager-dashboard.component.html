@@ -18,10 +18,6 @@
     View Public Reviews Page
   </button>
   <mat-divider></mat-divider>
-  <button mat-menu-item>
-    <mat-icon>settings</mat-icon>
-    Settings
-  </button>
   <button mat-menu-item (click)="logout()">
     <mat-icon>logout</mat-icon>
     Logout
@@ -116,10 +112,12 @@
                     <mat-label>Status</mat-label>
                     <mat-select [value]="selectedStatus()" (selectionChange)="onStatusChange($event.value)">
                       <mat-option value="">All Statuses</mat-option>
-                      <mat-option value="pending">Pending</mat-option>
-                      <mat-option value="approved">Approved</mat-option>
-                      <mat-option value="published">Published</mat-option>
-                      <mat-option value="rejected">Rejected</mat-option>
+                      @for (status of statusOptions(); track status.value) {
+                        <mat-option [value]="status.value">
+                          <mat-icon [style.color]="status.color">{{ status.icon }}</mat-icon>
+                          {{ status.label }}
+                        </mat-option>
+                      }
                     </mat-select>
                   </mat-form-field>
 
@@ -128,23 +126,30 @@
                     <mat-label>Channel</mat-label>
                     <mat-select [value]="selectedChannel()" (selectionChange)="onChannelChange($event.value)">
                       <mat-option value="">All Channels</mat-option>
-                      <mat-option value="airbnb">Airbnb</mat-option>
-                      <mat-option value="booking">Booking.com</mat-option>
-                      <mat-option value="direct">Direct</mat-option>
-                      <mat-option value="google">Google</mat-option>
+                      @for (channel of channelOptions(); track channel.value) {
+                        <mat-option [value]="channel.value">
+                          <span class="channel-option">
+                            <mat-icon>{{ getChannelIcon(channel.value) }}</mat-icon>
+                            {{ channel.label }}
+                            @if (channel.count > 0) {
+                              <span class="count-badge">({{ channel.count }})</span>
+                            }
+                          </span>
+                        </mat-option>
+                      }
                     </mat-select>
                   </mat-form-field>
 
-                  <!-- Property Filter -->
+                  <!-- Rating Filter -->
                   <mat-form-field appearance="outline">
-                    <mat-label>Property</mat-label>
-                    <mat-select [value]="selectedProperty()" (selectionChange)="onPropertyChange($event.value)">
-                      <mat-option value="">All Properties</mat-option>
-                      @for (property of propertyPerformance(); track property.propertyId) {
-                        <mat-option [value]="property.propertyId">
-                          {{ property.propertyName }}
-                        </mat-option>
-                      }
+                    <mat-label>Rating</mat-label>
+                    <mat-select [value]="selectedRating()" (selectionChange)="onRatingChange($event.value)">
+                      <mat-option value="">All Ratings</mat-option>
+                      <mat-option value="5">5 Stars</mat-option>
+                      <mat-option value="4">4+ Stars</mat-option>
+                      <mat-option value="3">3+ Stars</mat-option>
+                      <mat-option value="2">2+ Stars</mat-option>
+                      <mat-option value="1">1+ Stars</mat-option>
                     </mat-select>
                   </mat-form-field>
                   
@@ -153,16 +158,7 @@
                   </button>
                 </div>
 
-                <!-- Quick Filters -->
-                <div class="quick-filters">
-                  <mat-chip-listbox>
-                    <mat-chip-option>Show Flagged ({{ flaggedReviews().length }})</mat-chip-option>
-                    <mat-chip-option>Pending Approval ({{ reviewsByStatus().pending }})</mat-chip-option>
-                    <mat-chip-option>High Rating (4.5+)</mat-chip-option>
-                    <mat-chip-option>Low Rating (<3)</mat-chip-option>
-                    <mat-chip-option>Recent (Last 7 days)</mat-chip-option>
-                  </mat-chip-listbox>
-                </div>
+
               </mat-card-content>
             </mat-card>
 
@@ -247,7 +243,12 @@
 
                   <!-- Date Column -->
                   <ng-container matColumnDef="submittedAt">
-                    <th mat-header-cell *matHeaderCellDef mat-sort-header>Date</th>
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header="submittedAt" class="sortable-header" (click)="sortBy('submittedAt')">
+                      <span class="header-content">
+                        Date
+                        <mat-icon class="sort-icon">{{ getSortIcon('submittedAt') }}</mat-icon>
+                      </span>
+                    </th>
                     <td mat-cell *matCellDef="let review">
                       {{ formatDate(review.submittedAt) }}
                     </td>
@@ -258,13 +259,20 @@
                     <th mat-header-cell *matHeaderCellDef>Issues</th>
                     <td mat-cell *matCellDef="let review">
                       @if (review.flaggedIssues && review.flaggedIssues.length > 0) {
-                        <mat-chip-listbox>
-                          @for (issue of review.flaggedIssues; track issue) {
-                            <mat-chip class="issue-chip">{{ issue }}</mat-chip>
-                          }
-                        </mat-chip-listbox>
+                        <div class="issues-count" 
+                             [matTooltip]="getIssuesToolTip(review.flaggedIssues)"
+                             matTooltipPosition="above">
+                          <mat-icon class="warning-icon" 
+                                    [style.color]="getIssuesSeverityColor(review.flaggedIssues.length)">
+                            warning
+                          </mat-icon>
+                          <span class="count">{{ review.flaggedIssues.length }}</span>
+                        </div>
                       } @else {
-                        <span class="no-issues">No issues</span>
+                        <span class="no-issues">
+                          <mat-icon class="success-icon">check_circle</mat-icon>
+                          No issues
+                        </span>
                       }
                     </td>
                   </ng-container>
@@ -289,15 +297,13 @@
                         <mat-icon>more_vert</mat-icon>
                       </button>
                       <mat-menu #actionMenu="matMenu">
-                        <button mat-menu-item (click)="updateReviewStatus(review.id, 'approved')">
-                          <mat-icon>check</mat-icon>Approve
-                        </button>
-                        <button mat-menu-item (click)="updateReviewStatus(review.id, 'rejected')">
-                          <mat-icon>close</mat-icon>Reject
-                        </button>
-                        <button mat-menu-item (click)="updateReviewStatus(review.id, 'published')">
-                          <mat-icon>publish</mat-icon>Publish
-                        </button>
+                        @for (status of statusOptions(); track status.value) {
+                          <button mat-menu-item (click)="updateReviewStatus(review.id, status.value)">
+                            <mat-icon [style.color]="status.color">{{ status.icon }}</mat-icon>
+                            {{ status.label }}
+                          </button>
+                        }
+                        <mat-divider></mat-divider>
                         <button mat-menu-item (click)="navigateToReview(review.id)">
                           <mat-icon>visibility</mat-icon>View Details
                         </button>

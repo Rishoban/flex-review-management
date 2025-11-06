@@ -1,12 +1,14 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
-import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatIconModule } from '@angular/material/icon';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
+import { AuthService } from '../../../shared/services/auth.service';
+import { LoginRequest } from '../../../shared/models/auth.models';
 
 @Component({
   selector: 'app-login',
@@ -17,35 +19,86 @@ import { Router } from '@angular/router';
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
-    MatCheckboxModule,
     MatIconModule
   ],
   templateUrl: './login-simple.component.html',
   styleUrls: ['./login-simple.component.css']
 })
 export class LoginSimpleComponent {
-  protected loginForm: FormGroup;
-  protected isLoading = false;
-  protected showPassword = false;
+  private readonly fb = inject(FormBuilder);
+  private readonly router = inject(Router);
+  private readonly authService = inject(AuthService);
+  private readonly snackBar = inject(MatSnackBar);
 
-  constructor(private fb: FormBuilder, private router: Router) {
+  protected loginForm: FormGroup;
+  protected showPassword = false;
+  protected isSubmitting = false;
+
+  // Use both AuthService and local loading state
+  protected get isLoading() {
+    return this.authService.isLoading() || this.isSubmitting;
+  }
+
+  constructor() {
     this.loginForm = this.fb.group({
-      email: ['admin@example.com', [Validators.required, Validators.email]],
-      password: ['password', [Validators.required, Validators.minLength(6)]],
-      rememberMe: [false]
+      email: ['admin@gmail.com', [Validators.required, Validators.email]],
+      password: ['123456', [Validators.required, Validators.minLength(6)]]
     });
   }
 
   protected onSubmit(): void {
-    if (this.loginForm.valid) {
-      this.isLoading = true;
-      // Simulate login
-      setTimeout(() => {
-        this.isLoading = false;
-        console.log('Login successful!');
-        this.router.navigate(['/dashboard']);
-      }, 1000);
+    if (this.loginForm.valid && !this.isLoading) {
+      this.isSubmitting = true;
+      
+      const credentials: LoginRequest = {
+        email: this.loginForm.value.email,
+        password: this.loginForm.value.password
+      };
+
+      // Add timeout safety mechanism
+      const timeoutId = setTimeout(() => {
+        if (this.isSubmitting) {
+          this.isSubmitting = false;
+          this.showErrorMessage('Request timed out. Please try again.');
+        }
+      }, 30000); // 30 second timeout
+
+      this.authService.login(credentials).subscribe({
+        next: (response) => {
+          clearTimeout(timeoutId);
+          this.isSubmitting = false;
+          this.showSuccessMessage('Login successful!');
+          // Navigation is handled by AuthService
+        },
+        error: (error: Error) => {
+          clearTimeout(timeoutId);
+          this.isSubmitting = false;
+          this.showErrorMessage(error.message || 'Login failed. Please try again.');
+        }
+      });
+    } else if (!this.loginForm.valid) {
+      this.markAllFieldsAsTouched();
     }
+  }
+
+  private markAllFieldsAsTouched(): void {
+    Object.keys(this.loginForm.controls).forEach(key => {
+      this.loginForm.get(key)?.markAsTouched();
+    });
+  }
+
+  private showSuccessMessage(message: string): void {
+    this.snackBar.open(message, 'Close', {
+      duration: 3000,
+      panelClass: ['success-snackbar']
+    });
+  }
+
+  private showErrorMessage(message: string): void {
+    this.snackBar.open(message, 'Close', {
+      duration: 5000,
+      panelClass: ['error-snackbar']
+    });
   }
 
   protected togglePasswordVisibility(): void {

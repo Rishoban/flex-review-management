@@ -178,9 +178,20 @@ import { Review } from '../../shared/models/review.models';
 
           @if (hasMoreReviews()) {
             <div class="load-more">
-              <button mat-raised-button color="primary" (click)="loadMoreReviews()">
-                Load More Reviews
+              <button mat-raised-button color="primary" (click)="loadMoreReviews()" [disabled]="isLoading()">
+                @if (isLoading()) {
+                  Loading...
+                } @else {
+                  Load More Reviews
+                }
               </button>
+            </div>
+          }
+          
+          @if (isLoading() && displayedReviews().length === 0) {
+            <div class="loading-initial">
+              <mat-icon>hourglass_empty</mat-icon>
+              <p>Loading reviews...</p>
             </div>
           }
 
@@ -271,7 +282,12 @@ export class ReviewsDisplayComponent implements OnInit {
   selectedRating = signal<string>('');
   selectedChannel = signal<string>('');
   
-  // Pagination
+  // Pagination - API based
+  currentApiPage = signal<number>(1);
+  paginationInfo = signal<any>({ hasNext: false, hasPrev: false, total: 0 });
+  isLoading = signal<boolean>(false);
+  
+  // Client-side pagination for display
   reviewsPerPage = 12;
   currentPage = 0;
 
@@ -310,58 +326,95 @@ export class ReviewsDisplayComponent implements OnInit {
     return uniqueProps.size;
   });
 
-  hasMoreReviews = computed(() => 
-    this.displayedReviews().length < this.filteredReviews().length
-  );
+  hasMoreReviews = computed(() => {
+    const displayedCount = this.displayedReviews().length;
+    const filteredCount = this.filteredReviews().length;
+    const hasMoreClient = displayedCount < filteredCount;
+    const hasMoreApi = this.paginationInfo().hasNext;
+    
+    return hasMoreClient || hasMoreApi;
+  });
 
   ngOnInit() {
-    this.loadReviews();
-    this.loadProperties();
+    this.loadReviews(1, true);
   }
 
-  loadReviews() {
-    this.reviewService.getReviews().subscribe(reviews => {
-      // Only show published reviews that are selected for website
-      const publicReviews = reviews.filter(review => 
-        review.status === 'published' && 
-        review.isSelectedForWebsite === true
-      );
-      
-      this.allReviews.set(publicReviews);
-      this.resetPagination();
+  loadReviews(page = 1, reset = false) {
+    this.isLoading.set(true);
+    
+    this.reviewService.getPublishedReviews(page, 50).subscribe({
+      next: (response) => {
+        // Filter for reviews selected for website display
+        const websiteReviews = response.reviews.filter(review => 
+          review.isSelectedForWebsite === true
+        );
+        
+        if (reset) {
+          this.allReviews.set(websiteReviews);
+          // Update properties list from loaded reviews
+          this.loadProperties();
+        } else {
+          this.allReviews.update(current => [...current, ...websiteReviews]);
+        }
+        
+        this.paginationInfo.set(response.pagination);
+        this.currentApiPage.set(page);
+        
+        if (reset) {
+          this.resetPagination();
+        }
+        
+        this.isLoading.set(false);
+      },
+      error: (error) => {
+        console.error('Failed to load reviews:', error);
+        this.isLoading.set(false);
+      }
     });
   }
 
   loadProperties() {
-    // Mock property data - in real app, this would come from a property service
-    const props = [
+    // Extract unique properties from loaded reviews
+    const reviewProperties = this.allReviews().map(review => ({
+      id: review.propertyId,
+      name: review.listingName
+    }));
+    
+    // Remove duplicates
+    const uniqueProperties = reviewProperties.filter((prop, index, self) => 
+      index === self.findIndex(p => p.id === prop.id)
+    );
+    
+    // Fallback to mock data if no reviews loaded yet
+    const props = uniqueProperties.length > 0 ? uniqueProperties : [
       { id: 'prop_001', name: '2B N1 A - 29 Shoreditch Heights' },
       { id: 'prop_002', name: '1B S2 B - 15 Camden Lock' },
       { id: 'prop_003', name: '2B W3 C - 42 Notting Hill Gate' }
     ];
+    
     this.properties.set(props);
   }
 
   onPropertyChange(value: string) {
     this.selectedProperty.set(value);
-    this.resetPagination();
+    this.loadReviews(1, true);
   }
 
   onRatingChange(value: string) {
     this.selectedRating.set(value);
-    this.resetPagination();
+    this.loadReviews(1, true);
   }
 
   onChannelChange(value: string) {
     this.selectedChannel.set(value);
-    this.resetPagination();
+    this.loadReviews(1, true);
   }
 
   clearFilters() {
     this.selectedProperty.set('');
     this.selectedRating.set('');
     this.selectedChannel.set('');
-    this.resetPagination();
+    this.loadReviews(1, true);
   }
 
   resetPagination() {
@@ -373,10 +426,16 @@ export class ReviewsDisplayComponent implements OnInit {
   loadMoreReviews() {
     const start = this.currentPage * this.reviewsPerPage;
     const end = start + this.reviewsPerPage;
-    const newReviews = this.filteredReviews().slice(start, end);
+    const filtered = this.filteredReviews();
+    const newReviews = filtered.slice(start, end);
     
-    this.displayedReviews.update(current => [...current, ...newReviews]);
-    this.currentPage++;
+    if (newReviews.length > 0) {
+      this.displayedReviews.update(current => [...current, ...newReviews]);
+      this.currentPage++;
+    } else if (this.paginationInfo().hasNext && !this.isLoading()) {
+      // Load more from API if no more client-side reviews but API has more
+      this.loadReviews(this.currentApiPage() + 1, false);
+    }
   }
 
   getInitials(name: string): string {
