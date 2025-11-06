@@ -1,21 +1,33 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, of, BehaviorSubject } from 'rxjs';
-import { delay, map } from 'rxjs/operators';
+import { delay, map, catchError } from 'rxjs/operators';
+import { EnvironmentService } from './environment.service';
 import { 
   Review, 
   PropertyPerformance, 
   DashboardFilters, 
   DashboardStats, 
   TrendData,
-  GoogleReview 
+  GoogleReview,
+  PaginationInfo,
+  DropdownData,
+  DropdownOption,
+  Channel,
+  ChannelsResponse,
+  Property,
+  PropertiesResponse
 } from '../models/review.models';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ReviewService {
-  private reviewsSubject = new BehaviorSubject<Review[]>([]);
-  public reviews$ = this.reviewsSubject.asObservable();
+  private readonly http = inject(HttpClient);
+  private readonly env = inject(EnvironmentService);
+  
+  private readonly reviews = new BehaviorSubject<Review[]>([]);
+  public reviews$ = this.reviews.asObservable();
 
   private mockReviews: Review[] = [
     {
@@ -117,13 +129,135 @@ export class ReviewService {
   ];
 
   constructor() {
-    this.reviewsSubject.next(this.mockReviews);
+    this.reviews.next(this.mockReviews);
   }
 
-  getReviews(filters?: DashboardFilters): Observable<Review[]> {
-    return of(this.mockReviews).pipe(
-      map(reviews => this.applyFilters(reviews, filters)),
-      delay(300) // Simulate API call
+  getReviews(filters?: DashboardFilters, page = 1, limit = 10): Observable<Review[]> {
+    const url = `${this.env.apiUrl}/reviews`;
+    const params = new HttpParams()
+      .set('page', page.toString())
+      .set('limit', limit.toString());
+    
+    return this.http.get<any>(url, { params }).pipe(
+      map(response => {
+        if (response.success && response.data && response.data.reviews) {
+          const reviews = response.data.reviews;
+          // Update local state with fresh data
+          this.reviews.next(reviews);
+          // Apply filters if provided
+          return filters ? this.applyFilters(reviews, filters) : reviews;
+        }
+        // Fallback to mock data if API fails
+        const filteredMock = filters ? this.applyFilters(this.mockReviews, filters) : this.mockReviews;
+        this.reviews.next(filteredMock);
+        return filteredMock;
+      }),
+      catchError((error) => {
+        console.warn('Failed to fetch reviews from API, using mock data:', error);
+        const filteredMock = filters ? this.applyFilters(this.mockReviews, filters) : this.mockReviews;
+        this.reviews.next(filteredMock);
+        return of(filteredMock);
+      })
+    );
+  }
+
+  // New method to get paginated reviews with full response
+  // New method specifically for public reviews (published only)
+  getPublishedReviews(page = 1, limit = 10): Observable<{reviews: Review[], pagination: PaginationInfo}> {
+    const url = `${this.env.apiUrl}/reviews`;
+    const params = new HttpParams()
+      .set('page', page.toString())
+      .set('limit', limit.toString())
+      .set('status', 'published');
+    
+    return this.http.get<any>(url, { params }).pipe(
+      map(response => {
+        if (response.success && response.data) {
+          return {
+            reviews: response.data.reviews,
+            pagination: response.data.pagination
+          };
+        }
+        // Fallback to mock published reviews
+        const publishedMockReviews = this.mockReviews.filter(r => r.status === 'published');
+        return {
+          reviews: publishedMockReviews,
+          pagination: {
+            page: 1,
+            limit: 10,
+            total: publishedMockReviews.length,
+            pages: 1,
+            hasNext: false,
+            hasPrev: false
+          }
+        };
+      }),
+      catchError((error) => {
+        console.warn('Failed to fetch published reviews from API, using mock data:', error);
+        const publishedMockReviews = this.mockReviews.filter(r => r.status === 'published');
+        return of({
+          reviews: publishedMockReviews,
+          pagination: {
+            page: 1,
+            limit: 10,
+            total: publishedMockReviews.length,
+            pages: 1,
+            hasNext: false,
+            hasPrev: false
+          }
+        });
+      })
+    );
+  }
+
+  getReviewsPaginated(page = 1, limit = 10, filters?: DashboardFilters): Observable<{reviews: Review[], pagination: PaginationInfo}> {
+    const url = `${this.env.apiUrl}/reviews`;
+    const params = new HttpParams()
+      .set('page', page.toString())
+      .set('limit', limit.toString());
+    
+    return this.http.get<any>(url, { params }).pipe(
+      map(response => {
+        if (response.success && response.data) {
+          let reviews = response.data.reviews;
+          // Apply filters if provided
+          if (filters) {
+            reviews = this.applyFilters(reviews, filters);
+          }
+          return {
+            reviews,
+            pagination: response.data.pagination
+          };
+        }
+        // Fallback to mock data
+        const mockReviews = filters ? this.applyFilters(this.mockReviews, filters) : this.mockReviews;
+        return {
+          reviews: mockReviews,
+          pagination: {
+            page: 1,
+            limit: 10,
+            total: mockReviews.length,
+            pages: 1,
+            hasNext: false,
+            hasPrev: false
+          }
+        };
+      }),
+      catchError((error) => {
+        console.warn('Failed to fetch paginated reviews from API, using mock data:', error);
+        const mockReviews = filters ? this.applyFilters(this.mockReviews, filters) : this.mockReviews;
+        return of({
+          reviews: mockReviews,
+          pagination: {
+            page: 1,
+            limit: 10,
+            total: mockReviews.length,
+            pages: 1,
+            hasNext: false,
+            hasPrev: false
+          }
+        });
+      })
     );
   }
 
@@ -183,7 +317,65 @@ export class ReviewService {
   }
 
   getDashboardStats(): Observable<DashboardStats> {
-    const stats: DashboardStats = {
+    const url = `${this.env.apiUrl}/reviews/stats`;
+    
+    return this.http.get<any>(url).pipe(
+      map(response => {
+        if (response.success && response.data) {
+          // Transform API response to match DashboardStats interface
+          const apiData = response.data;
+          const stats: DashboardStats = {
+            totalReviews: apiData.total,
+            averageRating: 4.4, // Calculate from reviews or get from another endpoint
+            pendingReviews: apiData.byStatus.pending,
+            publishedReviews: apiData.byStatus.published,
+            approvedReviews: apiData.byStatus.approved,
+            flaggedIssues: 0, // Calculate from reviews or get from another endpoint
+            propertiesCount: 3, // Get from another endpoint or calculate
+            lastSync: apiData.lastSync
+          };
+          return stats;
+        }
+        // Fallback to mock data if API fails
+        return this.getMockDashboardStats();
+      }),
+      catchError((error) => {
+        // Return mock data on error
+        console.warn('Failed to fetch dashboard stats from API, using mock data:', error);
+        return of(this.getMockDashboardStats());
+      })
+    );
+  }
+
+  // Get individual review by ID
+  getReviewById(id: number): Observable<Review> {
+    const url = `${this.env.apiUrl}/reviews/${id}`;
+    
+    return this.http.get<any>(url).pipe(
+      map(response => {
+        if (response.success && response.data) {
+          return response.data;
+        }
+        // Fallback to mock data
+        const mockReview = this.mockReviews.find(r => r.id === id);
+        if (mockReview) {
+          return mockReview;
+        }
+        throw new Error('Review not found');
+      }),
+      catchError((error) => {
+        console.warn('Failed to fetch review from API, using mock data:', error);
+        const mockReview = this.mockReviews.find(r => r.id === id);
+        if (mockReview) {
+          return of(mockReview);
+        }
+        throw error;
+      })
+    );
+  }
+
+  private getMockDashboardStats(): DashboardStats {
+    return {
       totalReviews: 55,
       averageRating: 4.4,
       pendingReviews: 8,
@@ -191,8 +383,6 @@ export class ReviewService {
       flaggedIssues: 4,
       propertiesCount: 3
     };
-
-    return of(stats).pipe(delay(150));
   }
 
   getTrendData(): Observable<TrendData[]> {
@@ -206,29 +396,208 @@ export class ReviewService {
     return of(trends).pipe(delay(250));
   }
 
-  updateReviewStatus(reviewId: number, status: Review['status']): Observable<Review> {
-    const reviews = this.reviewsSubject.value;
-    const reviewIndex = reviews.findIndex(r => r.id === reviewId);
+  updateReviewStatus(reviewId: number, status: string): Observable<Review> {
+    const reviews = this.reviews.value;
+    const reviewIndex = reviews.findIndex((r: Review) => r.id === reviewId);
     
     if (reviewIndex !== -1) {
       reviews[reviewIndex] = { ...reviews[reviewIndex], status };
-      this.reviewsSubject.next([...reviews]);
+      this.reviews.next([...reviews]);
       return of(reviews[reviewIndex]).pipe(delay(100));
     }
     
     throw new Error('Review not found');
   }
 
+  // New API methods for status updates
+  approveReview(reviewId: number): Observable<any> {
+    const url = `${this.env.apiUrl}/reviews/${reviewId}/approve`;
+    
+    return this.http.patch<any>(url, {}).pipe(
+      map(response => {
+        if (response.success) {
+          // Update local state if successful
+          this.updateLocalReviewStatus(reviewId, 'approved');
+          return response;
+        }
+        throw new Error(response.message || 'Failed to approve review');
+      }),
+      catchError((error) => {
+        console.error('Failed to approve review:', error);
+        // Fallback to local update for development
+        this.updateLocalReviewStatus(reviewId, 'approved');
+        return of({ success: true, message: 'Review approved (offline mode)' });
+      })
+    );
+  }
+
+  publishReview(reviewId: number): Observable<any> {
+    const url = `${this.env.apiUrl}/reviews/${reviewId}/publish`;
+    
+    return this.http.patch<any>(url, {}).pipe(
+      map(response => {
+        if (response.success) {
+          // Update local state if successful
+          this.updateLocalReviewStatus(reviewId, 'published');
+          return response;
+        }
+        throw new Error(response.message || 'Failed to publish review');
+      }),
+      catchError((error) => {
+        console.error('Failed to publish review:', error);
+        // Fallback to local update for development
+        this.updateLocalReviewStatus(reviewId, 'published');
+        return of({ success: true, message: 'Review published (offline mode)' });
+      })
+    );
+  }
+
+  rejectReview(reviewId: number): Observable<any> {
+    const url = `${this.env.apiUrl}/reviews/${reviewId}/reject`;
+    
+    return this.http.patch<any>(url, {}).pipe(
+      map(response => {
+        if (response.success) {
+          // Update local state if successful
+          this.updateLocalReviewStatus(reviewId, 'rejected');
+          return response;
+        }
+        throw new Error(response.message || 'Failed to reject review');
+      }),
+      catchError((error) => {
+        console.error('Failed to reject review:', error);
+        // Fallback to local update for development
+        this.updateLocalReviewStatus(reviewId, 'rejected');
+        return of({ success: true, message: 'Review rejected (offline mode)' });
+      })
+    );
+  }
+
+  private updateLocalReviewStatus(reviewId: number, status: Review['status']): void {
+    const reviews = this.reviews.value;
+    const reviewIndex = reviews.findIndex((r: Review) => r.id === reviewId);
+    
+    if (reviewIndex !== -1) {
+      reviews[reviewIndex] = { ...reviews[reviewIndex], status };
+      this.reviews.next([...reviews]);
+    }
+  }
+
+  // Get dropdown data for form fields
+  getDropdownData(): Observable<DropdownData> {
+    const url = `${this.env.apiUrl}/form/dropdowns`;
+    
+    return this.http.get<any>(url).pipe(
+      map(response => {
+        if (response.status === 'success' && response.data) {
+          return response.data;
+        }
+        // Fallback to mock data
+        return this.getMockDropdownData();
+      }),
+      catchError((error) => {
+        console.warn('Failed to fetch dropdown data from API, using mock data:', error);
+        return of(this.getMockDropdownData());
+      })
+    );
+  }
+
+  private getMockDropdownData(): DropdownData {
+    return {
+      statuses: [
+        {
+          value: 'pending',
+          label: 'Pending Review',
+          description: 'Review is awaiting manager approval',
+          color: '#ff9800',
+          icon: 'schedule',
+          sortOrder: 1,
+          isActive: true,
+          permissions: ['view', 'update']
+        },
+        {
+          value: 'approved',
+          label: 'Approved',
+          description: 'Review has been approved by manager',
+          color: '#2196f3',
+          icon: 'check_circle',
+          sortOrder: 2,
+          isActive: true,
+          permissions: ['view', 'update', 'publish']
+        },
+        {
+          value: 'published',
+          label: 'Published',
+          description: 'Review is live on the website',
+          color: '#4caf50',
+          icon: 'visibility',
+          sortOrder: 3,
+          isActive: true,
+          permissions: ['view', 'unpublish']
+        },
+        {
+          value: 'rejected',
+          label: 'Rejected',
+          description: 'Review has been rejected',
+          color: '#f44336',
+          icon: 'cancel',
+          sortOrder: 4,
+          isActive: true,
+          permissions: ['view', 'reapprove']
+        }
+      ],
+      metadata: {
+        totalCount: 4,
+        activeCount: 4,
+        lastUpdated: new Date().toISOString()
+      }
+    };
+  }
+
+  getChannels(): Observable<Channel[]> {
+    const url = `${this.env.apiUrl}/channels`;
+    
+    return this.http.get<ChannelsResponse>(url).pipe(
+      map(response => response?.data?.channels || []),
+      catchError(error => {
+        console.error('Error fetching channels data:', error);
+        // Return mock data as fallback
+        return of([
+          { value: 'airbnb', label: 'Airbnb', count: 0, lastReview: '', isActive: true },
+          { value: 'booking', label: 'Booking.com', count: 0, lastReview: '', isActive: true },
+          { value: 'direct', label: 'Direct', count: 0, lastReview: '', isActive: true },
+          { value: 'google', label: 'Google', count: 0, lastReview: '', isActive: true }
+        ]);
+      })
+    );
+  }
+
+  getProperties(): Observable<Property[]> {
+    const url = `${this.env.apiUrl}/properties`;
+    
+    return this.http.get<PropertiesResponse>(url).pipe(
+      map(response => response?.data?.properties || []),
+      catchError(error => {
+        console.error('Error fetching properties data:', error);
+        // Return mock data as fallback
+        return of([
+          { value: 'prop1', label: 'Property 1', count: 0, channels: [], averageRating: 0, lastReview: '', isActive: true },
+          { value: 'prop2', label: 'Property 2', count: 0, channels: [], averageRating: 0, lastReview: '', isActive: true }
+        ]);
+      })
+    );
+  }
+
   toggleWebsiteSelection(reviewId: number): Observable<Review> {
-    const reviews = this.reviewsSubject.value;
-    const reviewIndex = reviews.findIndex(r => r.id === reviewIndex);
+    const reviews = this.reviews.value;
+    const reviewIndex = reviews.findIndex((r: Review) => r.id === reviewId);
     
     if (reviewIndex !== -1) {
       reviews[reviewIndex] = { 
         ...reviews[reviewIndex], 
         isSelectedForWebsite: !reviews[reviewIndex].isSelectedForWebsite 
       };
-      this.reviewsSubject.next([...reviews]);
+      this.reviews.next([...reviews]);
       return of(reviews[reviewIndex]).pipe(delay(100));
     }
     
@@ -310,7 +679,10 @@ export class ReviewService {
       // Date range filter
       if (filters.dateRange) {
         const reviewDate = new Date(review.submittedAt);
-        if (reviewDate < filters.dateRange.start || reviewDate > filters.dateRange.end) {
+        if (filters.dateRange.start && reviewDate < filters.dateRange.start) {
+          return false;
+        }
+        if (filters.dateRange.end && reviewDate > filters.dateRange.end) {
           return false;
         }
       }

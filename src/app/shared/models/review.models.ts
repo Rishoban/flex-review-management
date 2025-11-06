@@ -6,7 +6,7 @@ export interface ReviewCategory {
 export interface Review {
   id: number;
   type: 'host-to-guest' | 'guest-to-host';
-  status: 'published' | 'pending' | 'approved' | 'rejected';
+  status: string;
   rating: number | null;
   publicReview: string;
   reviewCategory: ReviewCategory[];
@@ -47,7 +47,7 @@ export interface DashboardFilters {
   rating?: { min: number; max: number };
   category?: string;
   channel?: string;
-  dateRange?: { start: Date; end: Date };
+  dateRange?: { start?: Date; end?: Date };
   status?: string;
   searchTerm?: string;
 }
@@ -59,6 +59,40 @@ export interface DashboardStats {
   publishedReviews: number;
   flaggedIssues: number;
   propertiesCount: number;
+  approvedReviews?: number;
+  lastSync?: string;
+}
+
+export interface ApiStatsResponse {
+  success: boolean;
+  message: string;
+  data: {
+    total: number;
+    byStatus: {
+      published: number;
+      pending: number;
+      approved: number;
+    };
+    lastSync: string;
+  };
+}
+
+export interface PaginationInfo {
+  page: number;
+  limit: number;
+  total: number;
+  pages: number;
+  hasNext: boolean;
+  hasPrev: boolean;
+}
+
+export interface ApiReviewsResponse {
+  success: boolean;
+  message: string;
+  data: {
+    reviews: Review[];
+    pagination: PaginationInfo;
+  };
 }
 
 export interface TrendData {
@@ -66,4 +100,65 @@ export interface TrendData {
   rating: number;
   reviewCount: number;
   flaggedCount: number;
+}
+
+// Dropdown API interfaces
+export interface DropdownOption {
+  value: string;
+  label: string;
+  description: string;
+  color: string;
+  icon: string;
+  sortOrder: number;
+  isActive: boolean;
+  permissions: string[];
+}
+
+export interface DropdownData {
+  statuses: DropdownOption[];
+  metadata: {
+    totalCount: number;
+    activeCount: number;
+    lastUpdated: string;
+  };
+}
+
+// Properties API interfaces
+export interface Property {
+  value: string;
+  label: string;
+  count: number;
+  channels: string[];
+  averageRating: number;
+  lastReview: string;
+  isActive: boolean;
+}
+
+export interface PropertiesResponse {
+  status: string;
+  data: {
+    properties: Property[];
+    totalProperties: number;
+    totalReviews: number;
+    lastUpdated: string;
+  };
+}
+
+// Channels API interfaces
+export interface Channel {
+  value: string;
+  label: string;
+  count: number;
+  lastReview: string;
+  isActive: boolean;
+}
+
+export interface ChannelsResponse {
+  status: string;
+  data: {
+    channels: Channel[];
+    totalChannels: number;
+    totalReviews: number;
+    lastUpdated: string;
+  };
 }
