@@ -97,7 +97,7 @@
               <mat-card-content>
                 <div class="filters-row">
                   <!-- Search -->
-                  <mat-form-field appearance="outline">
+                  <mat-form-field appearance="outline" class="search-field">
                     <mat-label>Search reviews...</mat-label>
                     <input matInput 
                            [value]="searchTerm()"
@@ -109,7 +109,7 @@
                   <!-- Status Filter -->
                   <mat-form-field appearance="outline">
                     <mat-label>Status</mat-label>
-                    <mat-select>
+                    <mat-select [value]="selectedStatus()" (selectionChange)="onStatusChange($event.value)">
                       <mat-option value="">All Statuses</mat-option>
                       <mat-option value="pending">Pending</mat-option>
                       <mat-option value="approved">Approved</mat-option>
@@ -121,7 +121,7 @@
                   <!-- Channel Filter -->
                   <mat-form-field appearance="outline">
                     <mat-label>Channel</mat-label>
-                    <mat-select>
+                    <mat-select [value]="selectedChannel()" (selectionChange)="onChannelChange($event.value)">
                       <mat-option value="">All Channels</mat-option>
                       <mat-option value="airbnb">Airbnb</mat-option>
                       <mat-option value="booking">Booking.com</mat-option>
@@ -133,7 +133,7 @@
                   <!-- Property Filter -->
                   <mat-form-field appearance="outline">
                     <mat-label>Property</mat-label>
-                    <mat-select>
+                    <mat-select [value]="selectedProperty()" (selectionChange)="onPropertyChange($event.value)">
                       <mat-option value="">All Properties</mat-option>
                       @for (property of propertyPerformance(); track property.propertyId) {
                         <mat-option [value]="property.propertyId">
@@ -142,6 +142,10 @@
                       }
                     </mat-select>
                   </mat-form-field>
+                  
+                  <button mat-stroked-button color="primary" (click)="clearFilters()" class="clear-filters-btn">
+                    Clear Filters
+                  </button>
                 </div>
 
                 <!-- Quick Filters -->

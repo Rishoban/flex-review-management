@@ -80,6 +80,9 @@ export class ManagerDashboardComponent implements OnInit {
   // Filter state
   protected readonly filters = signal<DashboardFilters>({});
   protected readonly searchTerm = signal<string>('');
+  protected readonly selectedStatus = signal<string>('');
+  protected readonly selectedChannel = signal<string>('');
+  protected readonly selectedProperty = signal<string>('');
 
   // Table columns
   protected readonly displayedColumns = [
@@ -96,16 +99,37 @@ export class ManagerDashboardComponent implements OnInit {
 
   // Computed properties
   protected readonly filteredReviews = computed(() => {
-    const allReviews = this.reviews();
+    let filtered = this.reviews();
     const search = this.searchTerm().toLowerCase();
+    const status = this.selectedStatus();
+    const channel = this.selectedChannel();
+    const property = this.selectedProperty();
     
-    if (!search) return allReviews;
+    // Apply search filter
+    if (search) {
+      filtered = filtered.filter(review =>
+        review.guestName.toLowerCase().includes(search) ||
+        review.listingName.toLowerCase().includes(search) ||
+        review.publicReview.toLowerCase().includes(search)
+      );
+    }
     
-    return allReviews.filter(review =>
-      review.guestName.toLowerCase().includes(search) ||
-      review.listingName.toLowerCase().includes(search) ||
-      review.publicReview.toLowerCase().includes(search)
-    );
+    // Apply status filter
+    if (status) {
+      filtered = filtered.filter(review => review.status === status);
+    }
+    
+    // Apply channel filter
+    if (channel) {
+      filtered = filtered.filter(review => review.channel === channel);
+    }
+    
+    // Apply property filter
+    if (property) {
+      filtered = filtered.filter(review => review.propertyId === property);
+    }
+    
+    return filtered;
   });
 
   protected readonly reviewsByStatus = computed(() => {
@@ -280,8 +304,27 @@ export class ManagerDashboardComponent implements OnInit {
     this.searchTerm.set(event.target.value);
   }
 
+  protected onStatusChange(status: string): void {
+    this.selectedStatus.set(status);
+  }
+
+  protected onChannelChange(channel: string): void {
+    this.selectedChannel.set(channel);
+  }
+
+  protected onPropertyChange(property: string): void {
+    this.selectedProperty.set(property);
+  }
+
   protected onTabChange(index: number): void {
     this.selectedTab.set(index);
+  }
+
+  protected clearFilters(): void {
+    this.searchTerm.set('');
+    this.selectedStatus.set('');
+    this.selectedChannel.set('');
+    this.selectedProperty.set('');
   }
 
   protected exportReviews(): void {

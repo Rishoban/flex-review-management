@@ -140,7 +140,7 @@
   min-height: 500px;
 }
 
-/* Filters Card */
+/* Filters */
 .filters-card {
   margin-bottom: 2rem;
   border-radius: 16px;
@@ -148,15 +148,197 @@
   border: 1px solid rgba(72, 94, 84, 0.08);
 }
 
+.filters-card mat-card-header {
+  padding-bottom: 8px;
+}
+
+.filters-card mat-card-content {
+  padding-top: 16px;
+}
+
 .filters-row {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: 2fr 1fr 1fr 1fr;
   gap: 1rem;
   margin-bottom: 1.5rem;
+  align-items: stretch;
 }
 
 .filters-row mat-form-field {
   width: 100%;
+  min-width: 0;
+}
+
+/* Fix form field consistency in filters */
+::ng-deep .filters-row .mat-mdc-form-field {
+  width: 100% !important;
+  min-width: 200px !important;
+}
+
+::ng-deep .filters-row .mat-mdc-form-field .mat-mdc-text-field-wrapper {
+  width: 100% !important;
+}
+
+::ng-deep .filters-row .mat-mdc-form-field .mat-mdc-form-field-infix {
+  width: 100% !important;
+  min-height: 56px !important;
+  padding-top: 16px !important;
+  padding-bottom: 16px !important;
+}
+
+::ng-deep .filters-row .mat-mdc-form-field .mat-mdc-form-field-infix input {
+  width: 100% !important;
+  min-width: 0 !important;
+}
+
+::ng-deep .filters-row .mat-mdc-form-field.mat-mdc-form-field-has-icon-suffix .mat-mdc-form-field-infix {
+  padding-right: 48px !important;
+}
+
+::ng-deep .filters-row .mat-mdc-form-field .mat-mdc-form-field-icon-suffix {
+  position: absolute !important;
+  right: 12px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+}
+
+/* Fix Material Select Dropdown Issues */
+::ng-deep .mat-mdc-select-panel {
+  background: var(--theme-surface) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 8px 32px rgba(72, 94, 84, 0.2) !important;
+  border: 1px solid rgba(72, 94, 84, 0.1) !important;
+  max-height: 300px !important;
+  overflow-y: auto !important;
+  z-index: 1000 !important;
+}
+
+::ng-deep .mat-mdc-option {
+  background: transparent !important;
+  color: var(--theme-on-surface) !important;
+  padding: 12px 16px !important;
+  min-height: 48px !important;
+  line-height: 1.4 !important;
+  font-size: 14px !important;
+  border: none !important;
+  transition: background-color 0.2s ease !important;
+}
+
+::ng-deep .mat-mdc-option:hover {
+  background-color: rgba(72, 94, 84, 0.08) !important;
+  color: var(--theme-on-surface) !important;
+}
+
+::ng-deep .mat-mdc-option.mdc-list-item--selected {
+  background-color: rgba(72, 94, 84, 0.12) !important;
+  color: var(--theme-primary) !important;
+  font-weight: 500 !important;
+}
+
+::ng-deep .mat-mdc-option.mdc-list-item--selected:hover {
+  background-color: rgba(72, 94, 84, 0.16) !important;
+}
+
+/* Fix dropdown trigger styling */
+::ng-deep .mat-mdc-select-trigger {
+  color: var(--theme-on-surface) !important;
+  display: flex !important;
+  align-items: center !important;
+  width: 100% !important;
+}
+
+::ng-deep .mat-mdc-select-value {
+  color: var(--theme-on-surface) !important;
+  font-size: 14px !important;
+}
+
+::ng-deep .mat-mdc-select-placeholder {
+  color: rgba(72, 94, 84, 0.6) !important;
+}
+
+::ng-deep .mat-mdc-select-arrow {
+  color: var(--theme-primary) !important;
+  opacity: 0.7 !important;
+}
+
+/* Fix Material Menu styling for action dropdowns */
+::ng-deep .mat-mdc-menu-panel {
+  background: var(--theme-surface) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 8px 32px rgba(72, 94, 84, 0.2) !important;
+  border: 1px solid rgba(72, 94, 84, 0.1) !important;
+  z-index: 1000 !important;
+  min-width: 160px !important;
+}
+
+::ng-deep .mat-mdc-menu-item {
+  background: transparent !important;
+  color: var(--theme-on-surface) !important;
+  padding: 12px 16px !important;
+  min-height: 48px !important;
+  line-height: 1.4 !important;
+  font-size: 14px !important;
+  border: none !important;
+  transition: background-color 0.2s ease !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+}
+
+::ng-deep .mat-mdc-menu-item:hover {
+  background-color: rgba(72, 94, 84, 0.08) !important;
+  color: var(--theme-on-surface) !important;
+}
+
+::ng-deep .mat-mdc-menu-item:focus {
+  background-color: rgba(72, 94, 84, 0.12) !important;
+  outline: none !important;
+}
+
+::ng-deep .mat-mdc-menu-item mat-icon {
+  color: var(--theme-primary) !important;
+  opacity: 0.7 !important;
+  font-size: 18px !important;
+  width: 18px !important;
+  height: 18px !important;
+}
+
+::ng-deep .mat-mdc-menu-item:hover mat-icon {
+  opacity: 1 !important;
+}
+
+/* Prevent unwanted overlays */
+::ng-deep .cdk-overlay-backdrop {
+  background-color: transparent !important;
+}
+
+::ng-deep .cdk-overlay-container {
+  z-index: 1000 !important;
+}
+
+/* Specific fix for search field */
+.search-field {
+  min-width: 280px !important;
+  flex: 2 !important;
+}
+
+::ng-deep .search-field {
+  min-width: 280px !important;
+}
+
+::ng-deep .search-field .mat-mdc-text-field-wrapper {
+  width: 100% !important;
+  min-width: 280px !important;
+}
+
+::ng-deep .search-field .mat-mdc-form-field-infix {
+  width: 100% !important;
+  padding-right: 48px !important;
+}
+
+::ng-deep .search-field .mat-mdc-form-field-infix input {
+  width: 100% !important;
+  min-width: 200px !important;
 }
 
 .quick-filters {
@@ -174,6 +356,27 @@
 .quick-filters mat-chip-option.mdc-evolution-chip--selected {
   background-color: var(--theme-primary);
   color: var(--theme-on-primary);
+}
+
+/* Prevent dropdown conflicts with other elements */
+.filters-row mat-form-field {
+  position: relative;
+  z-index: 10;
+}
+
+.filters-row mat-form-field.mat-mdc-form-field-focus-overlay {
+  z-index: 20;
+}
+
+/* Ensure proper stacking context */
+.filters-card {
+  position: relative;
+  z-index: 5;
+}
+
+.reviews-table-card {
+  position: relative;
+  z-index: 1;
 }
 
 /* Reviews Table */
@@ -455,6 +658,23 @@
     gap: 1rem;
   }
 
+  .search-field {
+    min-width: unset !important;
+  }
+
+  ::ng-deep .search-field {
+    min-width: unset !important;
+  }
+
+  ::ng-deep .search-field .mat-mdc-text-field-wrapper {
+    min-width: unset !important;
+  }
+
+  ::ng-deep .filters-row .mat-mdc-form-field {
+    width: 100% !important;
+    min-width: unset !important;
+  }
+
   .property-stats {
     flex-direction: column;
     gap: 1rem;
@@ -476,6 +696,19 @@
 @media (max-width: 480px) {
   .app-title {
     font-size: 1rem;
+  }
+
+  .filters-card mat-card-content {
+    padding: 12px;
+  }
+
+  .quick-filters {
+    margin-top: 1rem;
+  }
+
+  .quick-filters mat-chip-option {
+    font-size: 0.75rem;
+    padding: 4px 8px;
   }
 
   .user-info {
@@ -505,4 +738,12 @@
     box-shadow: none !important;
     border: 1px solid #ccc !important;
   }
+}
+
+/* Clear Filters Button */
+.clear-filters-btn {
+  margin-left: 16px;
+  align-self: flex-start;
+  margin-top: 8px;
+  white-space: nowrap;
 }

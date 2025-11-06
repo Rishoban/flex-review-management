@@ -47,6 +47,51 @@ body {
   --mdc-outlined-text-field-input-text-color: var(--theme-on-surface) !important;
 }
 
+/* Global dropdown fixes */
+.mat-mdc-select-panel {
+  background: var(--theme-surface) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 8px 32px rgba(72, 94, 84, 0.2) !important;
+  border: 1px solid rgba(72, 94, 84, 0.1) !important;
+  z-index: 1000 !important;
+}
+
+.mat-mdc-option {
+  color: var(--theme-on-surface) !important;
+  font-size: 14px !important;
+}
+
+.mat-mdc-option:hover {
+  background-color: rgba(72, 94, 84, 0.08) !important;
+}
+
+.mat-mdc-option.mdc-list-item--selected {
+  background-color: rgba(72, 94, 84, 0.12) !important;
+  color: var(--theme-primary) !important;
+}
+
+/* Global menu panel styling */
+.mat-mdc-menu-panel {
+  background: var(--theme-surface) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 8px 32px rgba(72, 94, 84, 0.2) !important;
+  border: 1px solid rgba(72, 94, 84, 0.1) !important;
+}
+
+.mat-mdc-menu-item {
+  color: var(--theme-on-surface) !important;
+  font-size: 14px !important;
+}
+
+.mat-mdc-menu-item:hover {
+  background-color: rgba(72, 94, 84, 0.08) !important;
+}
+
+.mat-mdc-menu-item mat-icon {
+  color: var(--theme-primary) !important;
+  opacity: 0.7;
+}
+
 .mat-mdc-raised-button.mat-primary {
   --mdc-protected-button-container-color: var(--theme-primary) !important;
   --mdc-protected-button-label-text-color: var(--theme-on-primary) !important;

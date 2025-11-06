@@ -82,10 +82,18 @@
 
 .form-field {
   margin-bottom: 1.5rem;
+  position: relative;
 }
 
 .full-width {
   width: 100%;
+  display: block;
+}
+
+/* Fix form field container alignment */
+.form-field .mat-mdc-form-field {
+  width: 100%;
+  display: block;
 }
 
 /* Form Options */
@@ -233,6 +241,120 @@
   --mdc-outlined-text-field-focus-outline-color: var(--theme-primary);
   --mdc-outlined-text-field-label-text-color: rgba(72, 94, 84, 0.7);
   --mdc-outlined-text-field-input-text-color: var(--theme-on-surface);
+  width: 100%;
+}
+
+/* Fix Material Icons display */
+::ng-deep .mat-icon {
+  font-family: 'Material Icons' !important;
+  font-weight: normal !important;
+  font-style: normal !important;
+  font-size: 24px !important;
+  line-height: 1 !important;
+  letter-spacing: normal !important;
+  text-transform: none !important;
+  display: inline-block !important;
+  white-space: nowrap !important;
+  word-wrap: normal !important;
+  direction: ltr !important;
+  -webkit-font-feature-settings: 'liga' !important;
+  -webkit-font-smoothing: antialiased !important;
+}
+
+/* Fix suffix icon positioning and display */
+::ng-deep .mat-mdc-form-field .mat-mdc-form-field-icon-suffix {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--theme-primary);
+  opacity: 0.7;
+}
+
+::ng-deep .mat-mdc-form-field .mat-mdc-form-field-icon-suffix .mat-icon {
+  font-size: 20px !important;
+  width: 20px !important;
+  height: 20px !important;
+  line-height: 20px !important;
+}
+
+::ng-deep .mat-mdc-form-field .mat-mdc-form-field-icon-suffix button {
+  color: var(--theme-primary);
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
+  background: none;
+  border: none;
+  padding: 4px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+::ng-deep .mat-mdc-form-field .mat-mdc-form-field-icon-suffix button:hover {
+  opacity: 1;
+  background-color: rgba(72, 94, 84, 0.1);
+}
+
+::ng-deep .mat-mdc-form-field .mat-mdc-form-field-icon-suffix button .mat-icon {
+  font-size: 20px !important;
+  width: 20px !important;
+  height: 20px !important;
+}
+
+/* Ensure proper input field width with suffix icons */
+::ng-deep .mat-mdc-form-field .mat-mdc-text-field-wrapper .mat-mdc-form-field-infix {
+  padding-right: 44px !important;
+  min-height: 56px;
+  display: flex;
+  align-items: center;
+}
+
+/* Fix input alignment */
+::ng-deep .mat-mdc-form-field .mat-mdc-text-field-wrapper .mat-mdc-form-field-infix input {
+  padding: 16px 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  width: 100%;
+}
+
+/* Specific classes for our custom icons */
+.suffix-icon {
+  font-family: 'Material Icons' !important;
+  color: var(--theme-primary) !important;
+  opacity: 0.7 !important;
+  font-size: 20px !important;
+  width: 20px !important;
+  height: 20px !important;
+  line-height: 20px !important;
+}
+
+.password-toggle {
+  color: var(--theme-primary) !important;
+  opacity: 0.7 !important;
+  transition: opacity 0.2s ease !important;
+  background: none !important;
+  border: none !important;
+  padding: 4px !important;
+  border-radius: 50% !important;
+}
+
+.password-toggle:hover {
+  opacity: 1 !important;
+  background-color: rgba(72, 94, 84, 0.1) !important;
+}
+
+.password-toggle .mat-icon {
+  font-family: 'Material Icons' !important;
+  font-size: 20px !important;
+  width: 20px !important;
+  height: 20px !important;
+  line-height: 20px !important;
 }
 
 ::ng-deep .mat-mdc-checkbox-checked .mat-mdc-checkbox-background {
