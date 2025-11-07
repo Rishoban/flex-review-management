@@ -4,16 +4,12 @@ import { authGuard, loginGuard, roleGuard } from './shared/guards/auth.guard';
 export const routes: Routes = [
   {
     path: '',
-    loadComponent: () => import('./test.component').then(m => m.TestComponent)
-  },
-  {
-    path: 'test',
-    loadComponent: () => import('./test.component').then(m => m.TestComponent)
+    redirectTo: '/login',
+    pathMatch: 'full'
   },
   {
     path: 'login',
     loadComponent: () => import('./features/auth/login/login-simple.component').then(m => m.LoginSimpleComponent)
-    // Temporarily removed loginGuard to debug
   },
   {
     path: 'dashboard',
@@ -34,7 +30,6 @@ export const routes: Routes = [
   {
     path: 'reviews',
     loadComponent: () => import('./features/public/reviews-display.component').then(m => m.ReviewsDisplayComponent)
-    // Public route - no auth required
   },
   {
     path: 'unauthorized',
@@ -42,6 +37,6 @@ export const routes: Routes = [
   },
   {
     path: '**',
-    loadComponent: () => import('./test.component').then(m => m.TestComponent)
+    redirectTo: '/login'
   }
 ];
