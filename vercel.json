@@ -1,6 +1,7 @@
 {
-  "framework": "angular",
+  "buildCommand": "npm ci && ./node_modules/.bin/ng build --configuration=production",
   "outputDirectory": "dist/flex-review-management/browser",
+  "installCommand": "npm install",
   "routes": [
     {
       "src": "/(.*)",
