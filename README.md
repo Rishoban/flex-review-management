@@ -1,8 +1,40 @@
-# FlexReviewManagement
+# Flex Review Management
+
+A modern Angular 20 application for managing customer reviews and feedback.
+
+## Features
+
+- ✅ Rating filter system (1-5 stars)
+- ✅ Date column sorting  
+- ✅ Responsive Material Design UI
+- ✅ JWT Authentication
+- ✅ RESTful API Integration
+- ✅ Signal-based reactive state management
+
+## Tech Stack
+
+- **Frontend**: Angular 20, Angular Material, TypeScript
+- **State Management**: Signals-based reactivity
+- **Styling**: Material Design with custom theming
+- **Build**: Angular CLI with optimized production builds
+- **Deployment**: Vercel
+
+## Quick Start
+
+```bash
+# Install dependencies
+npm install
+
+# Start development server  
+npm start
+
+# Build for production
+npm run build
+```
+
+## Development
 
 This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.3.9.
-
-## Development server
 
 To start a local development server, run:
 
@@ -53,6 +85,17 @@ ng e2e
 ```
 
 Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+
+## Deployment
+
+This application is configured for deployment on Vercel with:
+- Automatic Angular framework detection
+- Optimized build configuration
+- SPA routing support
+
+## Live Demo
+
+Deployed on Vercel: [flex-review-management](https://flex-review-management-w7o7-git-main-rishobans-projects.vercel.app)
 
 ## Additional Resources
 
