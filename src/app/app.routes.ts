@@ -9,8 +9,8 @@ export const routes: Routes = [
   },
   {
     path: 'login',
-    loadComponent: () => import('./features/auth/login/login-simple.component').then(m => m.LoginSimpleComponent),
-    canActivate: [loginGuard]
+    loadComponent: () => import('./features/auth/login/login-simple.component').then(m => m.LoginSimpleComponent)
+    // Temporarily removed loginGuard to debug
   },
   {
     path: 'dashboard',
