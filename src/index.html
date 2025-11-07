@@ -10,6 +10,36 @@
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
 <body>
-  <app-root></app-root>
+  <app-root>
+    <!-- Fallback content while Angular loads -->
+    <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #f0f0f0; z-index: 999; display: flex; align-items: center; justify-content: center; font-family: Arial;">
+      <div style="text-align: center; padding: 20px;">
+        <h1 style="color: #333; margin-bottom: 20px;">🔄 Loading Angular App...</h1>
+        <p style="color: #666;">If you see this for more than a few seconds, there might be a JavaScript error.</p>
+        <div style="margin-top: 20px; padding: 10px; background: white; border-radius: 5px;">
+          <strong>Debugging Steps:</strong><br>
+          1. Open browser DevTools (F12)<br>
+          2. Check Console tab for errors<br>
+          3. Check Network tab for failed requests
+        </div>
+      </div>
+    </div>
+  </app-root>
+  
+  <script>
+    // Log to console to check if JavaScript is working
+    console.log('HTML loaded successfully');
+    console.log('Current URL:', window.location.href);
+    console.log('User Agent:', navigator.userAgent);
+    
+    // Check if Angular has loaded after 5 seconds
+    setTimeout(() => {
+      const appRoot = document.querySelector('app-root');
+      if (appRoot && appRoot.innerHTML.includes('Loading Angular App')) {
+        console.error('Angular failed to load after 5 seconds');
+        console.error('This suggests a JavaScript loading or bootstrapping error');
+      }
+    }, 5000);
+  </script>
 </body>
 </html>

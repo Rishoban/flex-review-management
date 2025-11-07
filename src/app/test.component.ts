@@ -4,20 +4,13 @@ import { Component } from '@angular/core';
   selector: 'app-test',
   standalone: true,
   template: `
-    <div style="padding: 20px; text-align: center; font-family: Arial, sans-serif;">
-      <h1 style="color: #4CAF50;">🎉 Angular App is Working!</h1>
-      <p>This is a simple test component to verify Angular is loading correctly.</p>
-      <p>Current time: {{ currentTime }}</p>
-      <button (click)="updateTime()" style="padding: 10px 20px; background: #2196F3; color: white; border: none; border-radius: 4px; cursor: pointer;">
-        Update Time
-      </button>
+    <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 9999; padding: 20px; font-family: Arial;">
+      <h1 style="color: red; font-size: 24px;">ANGULAR IS LOADING!</h1>
+      <p>If you can see this, Angular is working.</p>
+      <p>Test timestamp: {{ timestamp }}</p>
     </div>
   `
 })
 export class TestComponent {
-  currentTime = new Date().toLocaleString();
-
-  updateTime() {
-    this.currentTime = new Date().toLocaleString();
-  }
+  timestamp = new Date().toISOString();
 }
