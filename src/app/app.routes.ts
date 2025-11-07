@@ -4,8 +4,11 @@ import { authGuard, loginGuard, roleGuard } from './shared/guards/auth.guard';
 export const routes: Routes = [
   {
     path: '',
-    redirectTo: '/login',
-    pathMatch: 'full'
+    loadComponent: () => import('./test.component').then(m => m.TestComponent)
+  },
+  {
+    path: 'test',
+    loadComponent: () => import('./test.component').then(m => m.TestComponent)
   },
   {
     path: 'login',
@@ -39,6 +42,6 @@ export const routes: Routes = [
   },
   {
     path: '**',
-    redirectTo: '/login'
+    loadComponent: () => import('./test.component').then(m => m.TestComponent)
   }
 ];
