@@ -10,15 +10,15 @@ try {
     .then(() => {
       console.log('✅ Angular bootstrap successful!');
       // Hide the loading message
-      const appRoot = document.querySelector('app-root');
+      const appRoot = document.querySelector('app-root') as HTMLElement;
       if (appRoot) {
-        const loadingDiv = appRoot.querySelector('div[style*="Loading Angular App"]');
-        if (loadingDiv) {
+        const loadingDiv = appRoot.querySelector('div') as HTMLElement;
+        if (loadingDiv && loadingDiv.innerHTML.includes('Loading Angular App')) {
           loadingDiv.style.display = 'none';
         }
       }
     })
-    .catch((err) => {
+    .catch((err: any) => {
       console.error('❌ Angular bootstrap failed:', err);
       console.error('Error details:', {
         name: err.name,
@@ -27,7 +27,7 @@ try {
       });
       
       // Show detailed error on page
-      const appRoot = document.querySelector('app-root');
+      const appRoot = document.querySelector('app-root') as HTMLElement;
       if (appRoot) {
         appRoot.innerHTML = `
           <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #ffebee; z-index: 9999; padding: 20px; font-family: Arial; overflow: auto;">
@@ -49,10 +49,10 @@ try {
         `;
       }
     });
-} catch (syncError) {
+} catch (syncError: any) {
   console.error('❌ Synchronous error during bootstrap setup:', syncError);
   
-  const appRoot = document.querySelector('app-root');
+  const appRoot = document.querySelector('app-root') as HTMLElement;
   if (appRoot) {
     appRoot.innerHTML = `
       <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #ffebee; z-index: 9999; padding: 20px; font-family: Arial;">

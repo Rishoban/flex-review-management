@@ -25,21 +25,5 @@
       </div>
     </div>
   </app-root>
-  
-  <script>
-    // Log to console to check if JavaScript is working
-    console.log('HTML loaded successfully');
-    console.log('Current URL:', window.location.href);
-    console.log('User Agent:', navigator.userAgent);
-    
-    // Check if Angular has loaded after 5 seconds
-    setTimeout(() => {
-      const appRoot = document.querySelector('app-root');
-      if (appRoot && appRoot.innerHTML.includes('Loading Angular App')) {
-        console.error('Angular failed to load after 5 seconds');
-        console.error('This suggests a JavaScript loading or bootstrapping error');
-      }
-    }, 5000);
-  </script>
 </body>
 </html>
