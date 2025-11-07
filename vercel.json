@@ -1,7 +1,14 @@
 {
-  "buildCommand": "npm ci && ./node_modules/.bin/ng build --configuration=production",
-  "outputDirectory": "dist/flex-review-management/browser",
-  "installCommand": "npm install",
+  "version": 2,
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "dist/flex-review-management/browser"
+      }
+    }
+  ],
   "routes": [
     {
       "src": "/(.*)",
