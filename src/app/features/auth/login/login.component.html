@@ -56,18 +56,6 @@
         </mat-form-field>
       </div>
 
-      <!-- Remember Me & Forgot Password -->
-      <div class="form-options">
-        <mat-checkbox formControlName="rememberMe" class="remember-me">
-          Remember me
-        </mat-checkbox>
-        <button type="button" 
-                class="forgot-password-link" 
-                (click)="onForgotPassword()">
-          Forgot password?
-        </button>
-      </div>
-
       <!-- Submit Button -->
       <div class="form-actions">
         <button mat-raised-button 
@@ -83,32 +71,6 @@
         </button>
       </div>
     </form>
-
-    <!-- Divider -->
-    <div class="divider">
-      <span>or</span>
-    </div>
-
-    <!-- Create Account -->
-    <div class="create-account">
-      <p>Don't have an account?</p>
-      <button mat-button 
-              type="button"
-              class="create-account-button"
-              (click)="onCreateAccount()">
-        Create Account
-      </button>
-    </div>
-
-    <!-- Demo Info -->
-    <div class="demo-info">
-      <mat-icon>info</mat-icon>
-      <div class="demo-text">
-        <strong>Demo Credentials:</strong><br>
-        Email: admin@gmail.com<br>
-        Password: 123456
-      </div>
-    </div>
   </div>
 
   <!-- Background Decoration -->

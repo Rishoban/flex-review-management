@@ -8,17 +8,142 @@
   <link rel="icon" type="image/x-icon" href="favicon.ico">
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <style>
+    /* Static login page styles - shown while Angular bootstraps */
+    .initial-login-container {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #fffbee 0%, #fffdf6 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      position: relative;
+      overflow: hidden;
+      font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+    .initial-login-card {
+      background: #fffdf6;
+      border-radius: 24px;
+      box-shadow: 0 4px 6px rgba(72, 94, 84, 0.1), 0 10px 20px rgba(72, 94, 84, 0.2);
+      padding: 3rem 2.5rem;
+      width: 100%;
+      max-width: 420px;
+      position: relative;
+      z-index: 10;
+      border: 1px solid rgba(72, 94, 84, 0.08);
+    }
+    .initial-logo-section {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+    .initial-logo {
+      margin-bottom: 1.5rem;
+      display: flex;
+      justify-content: center;
+    }
+    .initial-logo svg {
+      filter: drop-shadow(0 2px 4px rgba(72, 94, 84, 0.1));
+    }
+    .initial-app-title {
+      font-size: 1.75rem;
+      font-weight: 600;
+      color: #485e54;
+      margin: 0 0 0.5rem 0;
+      letter-spacing: -0.025em;
+    }
+    .initial-app-subtitle {
+      font-size: 1rem;
+      color: rgba(72, 94, 84, 0.7);
+      margin: 0;
+      font-weight: 400;
+    }
+    .initial-loading {
+      text-align: center;
+      padding: 2rem 0;
+      color: rgba(72, 94, 84, 0.7);
+    }
+    .initial-spinner {
+      width: 40px;
+      height: 40px;
+      margin: 0 auto 1rem;
+      border: 3px solid rgba(72, 94, 84, 0.2);
+      border-top-color: #485e54;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    .initial-background-decoration {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      pointer-events: none;
+      z-index: 1;
+    }
+    .initial-circle {
+      position: absolute;
+      border-radius: 50%;
+      background: linear-gradient(45deg, rgba(72, 94, 84, 0.1) 0%, rgba(72, 94, 84, 0.05) 50%, transparent 100%);
+    }
+    .initial-circle-1 {
+      width: 300px;
+      height: 300px;
+      top: -150px;
+      right: -150px;
+      animation: float 6s ease-in-out infinite;
+    }
+    .initial-circle-2 {
+      width: 200px;
+      height: 200px;
+      bottom: -100px;
+      left: -100px;
+      animation: float 4s ease-in-out infinite reverse;
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-20px) rotate(5deg); }
+    }
+    @media (max-width: 640px) {
+      .initial-login-card {
+        padding: 2rem 1.5rem;
+        border-radius: 20px;
+        margin: 0.5rem;
+      }
+      .initial-app-title {
+        font-size: 1.5rem;
+      }
+    }
+  </style>
 </head>
 <body>
   <app-root>
-    <!-- Loading fallback - Updated to force new deployment -->
-    <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #f0f8ff; z-index: 999; display: flex; align-items: center; justify-content: center; font-family: Arial;">
-      <div style="text-align: center; padding: 20px;">
-        <h1 style="color: #333; margin-bottom: 20px;">🚀 Loading Angular App...</h1>
-        <p style="color: #666;">Version: c41aa57 (Full Application - Latest Deployment)</p>
-        <div style="margin-top: 20px; padding: 10px; background: white; border-radius: 5px;">
-          <strong>Status:</strong> Loading full Angular application with routing...</div>
+    <!-- Static login page shown while Angular bootstraps -->
+    <div class="initial-login-container">
+      <div class="initial-login-card">
+        <div class="initial-logo-section">
+          <div class="initial-logo">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 2L2 7V10C2 16 6 20.5 12 22C18 20.5 22 16 22 10V7L12 2Z" 
+                    fill="#485e54" stroke="#485e54" stroke-width="2" 
+                    stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M9 12L11 14L15 10" stroke="#ffffff" stroke-width="2" 
+                    stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <h1 class="initial-app-title">Flex Review Management</h1>
+          <p class="initial-app-subtitle">Sign in to your account</p>
         </div>
+        <div class="initial-loading">
+          <div class="initial-spinner"></div>
+          <p>Loading application...</p>
+        </div>
+      </div>
+      <div class="initial-background-decoration">
+        <div class="initial-circle initial-circle-1"></div>
+        <div class="initial-circle initial-circle-2"></div>
       </div>
     </div>
   </app-root>
