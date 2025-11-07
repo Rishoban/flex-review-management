@@ -6,7 +6,7 @@ import { Injectable } from '@angular/core';
 export class EnvironmentService {
   private readonly config = {
     production: true,
-    apiUrl: 'https://flex-backend-fawn.vercel.app/api/v1',
+    apiUrl: 'https://vercel-py-gold.vercel.app/api/v1',
     tokenKey: 'flex_auth_token',
     refreshTokenKey: 'flex_refresh_token',
     userKey: 'flex_user_data',
