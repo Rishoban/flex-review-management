@@ -1,5 +1,4 @@
 {
-  "framework": "angular",
   "rewrites": [
     {
       "source": "/(.*)",
